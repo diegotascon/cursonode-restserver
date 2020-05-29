@@ -10,7 +10,7 @@ let urlDB;
 if (process.env.NODE_ENV === 'dev') {
     urlDB = 'mongodb://mongo:27017/cafe';
 } else {
-    urlDB = 'mongodb+srv://cafe-user:cafepassword@udemy-nodejs-cj64f.mongodb.net/cafe?retryWrites=true&w=majority';
+    urlDB = process.env.MONGO_URI;
 }
 
 // Se usa una propiedad de process.env para que server.js acceda a la URL
