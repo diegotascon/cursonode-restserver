@@ -6,21 +6,25 @@ const _ = require('underscore');
 // Importa el modelo de usuario
 const Usuario = require('../models/usuario');
 
+// Importa los middlewares de autenticación
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/autenticacion');
+
 const app = express();
 
 // Responde a GET
-app.get('/usuario', (req, res) => {
+app.get('/usuario', verificaToken, (req, res) => {
     // Obtengo el parámetro opcional desde. Si no está definido, supongo 0
     let desde = Number(req.query.desde) || 0;
     let limite = Number(req.query.limite) || 5;
     let soloActivos = { estado: true };
 
-    Usuario.find(soloActivos, 'nombre email')
+    // Usuario.find(soloActivos, 'nombre email') para devolver solo nombre y email
+    Usuario.find(soloActivos)
         .skip(desde)
         .limit(limite)
         .exec((err, usuarios) => {
             if (err) {
-                res.status(400).json({
+                return res.status(400).json({
                     ok: false,
                     err // err: err
                 });
@@ -40,7 +44,7 @@ app.get('/usuario', (req, res) => {
 
 // Responde a POST: creación de nuevos registros
 // Recomienda enviar la información en formato x-www-form-urlencoded
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
     // Al estar instalado el middleware de body-parser, éste ya entra en acción
     let body = req.body;
 
@@ -72,7 +76,7 @@ app.post('/usuario', (req, res) => {
 // Responde a PUT: actualización de registros
 // :id es el parámetro que se envía en la URL:
 //   http://localhost:8080/usuario/<nombre usuario>
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     // req.params.<variable definida en URL>
     let id = req.params.id;
     // let body = req.body;
@@ -112,7 +116,7 @@ app.put('/usuario/:id', (req, res) => {
 });
 
 // Responde a DELETE: borrado de usuarios
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
     // Solo quiero modificar el estado, y me da igual si ya estaba a false
