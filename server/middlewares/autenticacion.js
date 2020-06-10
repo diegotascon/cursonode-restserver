@@ -41,7 +41,31 @@ let verificaAdmin_Role = (req, res, next) => {
     }
 };
 
+// Verificación del token pasado por URL por páginas HTML
+let verificaTokenImg = (req, res, next) => {
+    // parámetro ?token= de la URL
+    let token = req.query.token;
+
+    jwt.verify(token, process.env.SEED, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({
+                ok: false,
+                err: {
+                    message: "Token no válido"
+                }
+            });
+        }
+
+        // Si el token es válido, se devuelve todo el usuario (payload)
+        req.usuario = decoded.usuario;
+
+        // Llama al contenido de la llamada (al contenido del app.get, app.post, ...)
+        next();
+    });
+};
+
 module.exports = {
     verificaToken,
-    verificaAdmin_Role
+    verificaAdmin_Role,
+    verificaTokenImg
 }
